@@ -31,6 +31,7 @@ Kurzfassung anhand **`.cursor/rules/CALCONNY-CURSOR-BRIEFING.md`** (Abschnitt 5)
 ## Commits (`git log --oneline`)
 
 ```
+cebac70 docs: add briefing status and align commit rules with Conventional Commits
 68f5e5a feat: multi-feed env, refresh button, and PWA with auto-update
 b736525 fix(api): robust ICS fetch for Vercel (User-Agent, IPv4-first, no-store)
 b32ff5c fix: normalize webcal:// and webcals:// to https for ICS fetch
