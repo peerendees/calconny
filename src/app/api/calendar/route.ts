@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeIcalFeedUrl } from "@/lib/ical-feed-url";
 import { parseIcsToCalendarEvents } from "@/lib/ics-parser";
 
 export const dynamic = "force-dynamic";
@@ -7,14 +8,19 @@ export async function GET() {
   const url = process.env.ICAL_FEED_URL;
   if (!url?.trim()) {
     return NextResponse.json(
-      { error: "ICAL_FEED_URL ist nicht gesetzt." },
+      {
+        error:
+          "ICAL_FEED_URL ist nicht gesetzt. In Vercel: Project → Settings → Environment Variables → ICAL_FEED_URL (https:// oder webcal://) für Production setzen und neu deployen.",
+      },
       { status: 500 },
     );
   }
 
+  const fetchUrl = normalizeIcalFeedUrl(url);
+
   let res: Response;
   try {
-    res = await fetch(url, {
+    res = await fetch(fetchUrl, {
       next: { revalidate: 300 },
       headers: { Accept: "text/calendar, text/plain, */*" },
     });
