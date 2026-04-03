@@ -28,18 +28,15 @@ Kurzfassung anhand **`.cursor/rules/CALCONNY-CURSOR-BRIEFING.md`** (Abschnitt 5)
 - **Abschnitt 7 „nicht in V1“:** **PWA/Service Worker** sind jetzt **drin** (bewusste Erweiterung).
 - **Build:** `npm run build` = **`next build --webpack`** wegen **next-pwa** (Workbox).
 
-## Commits (`git log --oneline`)
+## Commits
 
-```
-cebac70 docs: add briefing status and align commit rules with Conventional Commits
-68f5e5a feat: multi-feed env, refresh button, and PWA with auto-update
-b736525 fix(api): robust ICS fetch for Vercel (User-Agent, IPv4-first, no-store)
-b32ff5c fix: normalize webcal:// and webcals:// to https for ICS fetch
-c984374 feat: add CalConny calendar app with FullCalendar and ICS API
-62d1100 Initial commit from Create Next App
+Maßgeblich ist die aktuelle Historie im Repo:
+
+```bash
+git log --oneline
 ```
 
-*Stand: automatisch aus dem Repository; bei neuen Commits ggf. Abschnitt „Commits“ aktualisieren.*
+*(Diese Datei listet keine festen SHAs mehr, damit sie nicht bei jedem Commit angepasst werden muss.)*
 
 ## Commit-Konvention im Repo
 
