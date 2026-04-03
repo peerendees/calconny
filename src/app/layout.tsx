@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#090806",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const themeScript = `
@@ -49,7 +52,9 @@ export default function RootLayout({
         </Script>
         <PwaUpdateNotifier />
         <Header />
-        <main className="flex flex-1 flex-col px-4 py-6 sm:px-6">{children}</main>
+        <main className="flex flex-1 flex-col px-[max(1rem,env(safe-area-inset-left))] py-6 pr-[max(1rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>

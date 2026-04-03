@@ -42,13 +42,13 @@ export function ViewSwitcher({
 }: ViewSwitcherProps) {
   return (
     <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-0.5 sm:justify-start">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-1 sm:justify-start">
         {showWeekStepNav ? (
           <>
             <button
               type="button"
               onClick={onPrevWeek}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
               aria-label="Eine Woche zurück"
               title="Eine Woche zurück"
             >
@@ -57,7 +57,7 @@ export function ViewSwitcher({
             <button
               type="button"
               onClick={onPrevDay}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
               aria-label="Einen Tag zurück"
               title="Einen Tag zurück"
             >
@@ -68,7 +68,7 @@ export function ViewSwitcher({
           <button
             type="button"
             onClick={onPrevPeriod}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
+            className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
             aria-label="Vorheriger Zeitraum"
           >
             ←
@@ -82,7 +82,7 @@ export function ViewSwitcher({
             <button
               type="button"
               onClick={onNextDay}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
               aria-label="Einen Tag vor"
               title="Einen Tag vor"
             >
@@ -91,7 +91,7 @@ export function ViewSwitcher({
             <button
               type="button"
               onClick={onNextWeek}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
               aria-label="Eine Woche vor"
               title="Eine Woche vor"
             >
@@ -102,7 +102,7 @@ export function ViewSwitcher({
           <button
             type="button"
             onClick={onNextPeriod}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
+            className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
             aria-label="Nächster Zeitraum"
           >
             →
@@ -112,7 +112,7 @@ export function ViewSwitcher({
           type="button"
           onClick={onRefresh}
           disabled={refreshing}
-          className="ml-1 flex h-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] px-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide text-[var(--text)] hover:border-[var(--copper)] disabled:opacity-50 sm:px-3 sm:text-xs"
+          className="touch-manipulation ml-1 flex min-h-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] px-3 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide text-[var(--text)] hover:border-[var(--copper)] disabled:opacity-50 sm:px-3 sm:text-xs"
           aria-label="Kalenderdaten neu laden"
           title="Kalenderdaten neu laden"
         >
@@ -130,7 +130,7 @@ export function ViewSwitcher({
               type="button"
               onClick={() => onViewChange(v.id)}
               className={[
-                "rounded border px-2 py-1.5 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide transition-colors sm:px-3 sm:text-xs",
+                "touch-manipulation min-h-11 min-w-[2.75rem] rounded border px-2 py-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide transition-colors sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs",
                 isOn
                   ? "border-[var(--copper)] bg-[var(--copper)] text-[var(--bg)]"
                   : "border-[var(--border)] bg-[var(--card)] text-[var(--muted)] hover:border-[var(--copper)]",

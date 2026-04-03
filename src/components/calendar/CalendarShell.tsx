@@ -8,6 +8,7 @@ import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { formatGermanRangeTitle } from "@/lib/format-calendar-title";
 import { formatWeekAxisTime } from "@/lib/format-week-time";
 import type { CalendarEvent, CalendarView } from "@/lib/types";
 import { EventCard } from "./EventCard";
@@ -77,6 +78,7 @@ const weekTimeGridOpts = {
   scrollTime: "07:00:00",
   slotDuration: "00:30:00",
   height: 420,
+  weekNumbers: true,
   slotLabelContent: (arg: { date: Date }) => formatWeekAxisTime(arg.date),
   eventTimeFormat: {
     hour: "numeric" as const,
@@ -84,6 +86,12 @@ const weekTimeGridOpts = {
     hour12: false,
   },
 };
+
+function weekdayAbbrevDe(d: Date): string {
+  const short = new Intl.DateTimeFormat("de-DE", { weekday: "short" }).format(d);
+  const base = short.replace(/\.$/, "").trim();
+  return `${base.toUpperCase()}.`;
+}
 
 export function CalendarShell() {
   const calRef = useRef<FullCalendar>(null);
@@ -258,7 +266,23 @@ export function CalendarShell() {
             },
           }}
           datesSet={(arg) => {
-            setRangeTitle(arg.view.title);
+            setRangeTitle(formatGermanRangeTitle(arg.start, arg.end));
+          }}
+          dayHeaderContent={(arg) => {
+            if (!arg.view.type.includes("timeGrid")) {
+              return undefined;
+            }
+            const d = arg.date;
+            return (
+              <div className="calconny-week-day-head flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-t-lg bg-[var(--card)] px-1 py-2">
+                <span className="font-[family-name:var(--font-mono)] text-[0.65rem] font-medium uppercase tracking-wide text-[var(--muted)]">
+                  {weekdayAbbrevDe(d)}
+                </span>
+                <span className="text-2xl font-semibold leading-none text-[var(--text)] tabular-nums">
+                  {d.getDate()}
+                </span>
+              </div>
+            );
           }}
           viewDidMount={(arg) => {
             syncViewFromCalendar(arg.view.type);

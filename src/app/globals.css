@@ -199,3 +199,35 @@ a:hover {
   text-transform: none;
   color: var(--muted);
 }
+
+/* Wochenansicht: linke Ecke KW …, Tagesspalten (calconny-week-day-head) */
+.fc .fc-timegrid-header .fc-timegrid-axis {
+  vertical-align: top;
+}
+
+.fc .fc-timegrid-header .fc-timegrid-axis .fc-scrollgrid-sync-inner {
+  display: block;
+  padding: 0.5rem 0.35rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-align: left;
+}
+
+.fc .fc-timegrid-header .fc-col-header-cell {
+  vertical-align: top;
+  padding: 0;
+}
+
+.fc .fc-timegrid-header .fc-col-header-cell-cushion {
+  display: block;
+  width: 100%;
+  padding: 0;
+}
+
+.fc .calconny-week-day-head {
+  min-width: 0;
+}
