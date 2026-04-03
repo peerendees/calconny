@@ -8,6 +8,7 @@ import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { formatWeekAxisTime } from "@/lib/format-week-time";
 import type { CalendarEvent, CalendarView } from "@/lib/types";
 import { EventCard } from "./EventCard";
 import { ViewSwitcher } from "./ViewSwitcher";
@@ -68,6 +69,21 @@ async function loadCalendar(refresh: boolean): Promise<{ events: CalendarEvent[]
   }
   return parseCalendarApi(data);
 }
+
+/** Wochenansicht: sichtbarer Bereich ~6 h, ab 7:00 nach unten scrollbar (Tagesfenster 7–23 Uhr). */
+const weekTimeGridOpts = {
+  slotMinTime: "07:00:00",
+  slotMaxTime: "23:00:00",
+  scrollTime: "07:00:00",
+  slotDuration: "00:30:00",
+  height: 420,
+  slotLabelContent: (arg: { date: Date }) => formatWeekAxisTime(arg.date),
+  eventTimeFormat: {
+    hour: "numeric" as const,
+    minute: "2-digit" as const,
+    hour12: false,
+  },
+};
 
 export function CalendarShell() {
   const calRef = useRef<FullCalendar>(null);
@@ -138,12 +154,28 @@ export function CalendarShell() {
     else api.changeView(weekViewId);
   }
 
-  function goPrev() {
+  function goPrevPeriod() {
     calRef.current?.getApi().prev();
   }
 
-  function goNext() {
+  function goNextPeriod() {
     calRef.current?.getApi().next();
+  }
+
+  function goPrevDay() {
+    calRef.current?.getApi().prev();
+  }
+
+  function goNextDay() {
+    calRef.current?.getApi().next();
+  }
+
+  function goPrevWeek() {
+    calRef.current?.getApi().incrementDate({ days: -7 });
+  }
+
+  function goNextWeek() {
+    calRef.current?.getApi().incrementDate({ days: 7 });
   }
 
   if (loading) {
@@ -190,8 +222,13 @@ export function CalendarShell() {
         active={activeView}
         rangeTitle={rangeTitle}
         onViewChange={goView}
-        onPrev={goPrev}
-        onNext={goNext}
+        onPrevPeriod={goPrevPeriod}
+        onNextPeriod={goNextPeriod}
+        onPrevDay={goPrevDay}
+        onNextDay={goNextDay}
+        onPrevWeek={goPrevWeek}
+        onNextWeek={goNextWeek}
+        showWeekStepNav={activeView === "slidingWeek"}
         onRefresh={() => void runLoad(true)}
         refreshing={refreshing}
       />
@@ -211,11 +248,13 @@ export function CalendarShell() {
               type: "timeGrid",
               duration: { days: 7 },
               dateIncrement: { days: 1 },
+              ...weekTimeGridOpts,
             },
             slidingWeekNarrow: {
               type: "timeGrid",
               duration: { days: 3 },
               dateIncrement: { days: 1 },
+              ...weekTimeGridOpts,
             },
           }}
           datesSet={(arg) => {
@@ -232,6 +271,20 @@ export function CalendarShell() {
                   timeLabel={arg.timeText}
                   location={arg.event.extendedProps?.location as string | undefined}
                 />
+              );
+            }
+            if (arg.view.type.includes("timeGrid") && !arg.event.allDay) {
+              const start = arg.event.start;
+              if (!start) return undefined;
+              const end = arg.event.end;
+              const timeStr = end
+                ? `${formatWeekAxisTime(start)} – ${formatWeekAxisTime(end)}`
+                : formatWeekAxisTime(start);
+              return (
+                <>
+                  <div className="fc-event-time">{timeStr}</div>
+                  <div className="fc-event-title">{arg.event.title}</div>
+                </>
               );
             }
             return undefined;

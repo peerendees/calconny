@@ -191,3 +191,11 @@ a:hover {
 .fc .fc-scrollgrid {
   border-color: var(--border);
 }
+
+.fc .fc-timegrid-slot-label,
+.fc .fc-timegrid-slot-label-cushion {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: none;
+  color: var(--muted);
+}

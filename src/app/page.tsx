@@ -7,7 +7,7 @@ export default function Home() {
         CalConny
       </h1>
       <p className="mb-8 font-[family-name:var(--font-body)] text-sm text-[var(--muted)] sm:text-base">
-        Öffentlicher Kalender-Feed · Monat, Woche und Liste
+        Connys Kalender-Feed · Monat, Woche und Liste
       </p>
       <CalendarShell />
     </div>

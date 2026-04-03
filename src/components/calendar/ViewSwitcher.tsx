@@ -6,8 +6,16 @@ type ViewSwitcherProps = {
   active: CalendarView;
   rangeTitle: string;
   onViewChange: (view: CalendarView) => void;
-  onPrev: () => void;
-  onNext: () => void;
+  /** Monat / Liste: ein Schritt (Monat bzw. Listenzeitraum) */
+  onPrevPeriod: () => void;
+  onNextPeriod: () => void;
+  /** Nur Wochenansicht: Tag-Schritt (einzelner Pfeil) */
+  onPrevDay: () => void;
+  onNextDay: () => void;
+  /** Nur Wochenansicht: Wochen-Schritt (Doppelpfeil) */
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
+  showWeekStepNav: boolean;
   onRefresh: () => void;
   refreshing: boolean;
 };
@@ -22,33 +30,84 @@ export function ViewSwitcher({
   active,
   rangeTitle,
   onViewChange,
-  onPrev,
-  onNext,
+  onPrevPeriod,
+  onNextPeriod,
+  onPrevDay,
+  onNextDay,
+  onPrevWeek,
+  onNextWeek,
+  showWeekStepNav,
   onRefresh,
   refreshing,
 }: ViewSwitcherProps) {
   return (
     <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-1 sm:justify-start">
-        <button
-          type="button"
-          onClick={onPrev}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
-          aria-label="Vorheriger Zeitraum"
-        >
-          ←
-        </button>
+      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-0.5 sm:justify-start">
+        {showWeekStepNav ? (
+          <>
+            <button
+              type="button"
+              onClick={onPrevWeek}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              aria-label="Eine Woche zurück"
+              title="Eine Woche zurück"
+            >
+              «
+            </button>
+            <button
+              type="button"
+              onClick={onPrevDay}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              aria-label="Einen Tag zurück"
+              title="Einen Tag zurück"
+            >
+              ‹
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onPrevPeriod}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
+            aria-label="Vorheriger Zeitraum"
+          >
+            ←
+          </button>
+        )}
         <p className="min-w-0 flex-1 truncate text-center font-[family-name:var(--font-body)] text-sm text-[var(--text)] sm:text-left sm:text-base">
           {rangeTitle}
         </p>
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
-          aria-label="Nächster Zeitraum"
-        >
-          →
-        </button>
+        {showWeekStepNav ? (
+          <>
+            <button
+              type="button"
+              onClick={onNextDay}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              aria-label="Einen Tag vor"
+              title="Einen Tag vor"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              onClick={onNextWeek}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)]"
+              aria-label="Eine Woche vor"
+              title="Eine Woche vor"
+            >
+              »
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onNextPeriod}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)]"
+            aria-label="Nächster Zeitraum"
+          >
+            →
+          </button>
+        )}
         <button
           type="button"
           onClick={onRefresh}
