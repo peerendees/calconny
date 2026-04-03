@@ -1,26 +1,193 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Bebas Neue";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/bebas-neue-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Lora;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/lora-300.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Lora;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/lora-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Lora;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/lora-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-500.woff2") format("woff2");
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #090806;
+  --card: #110e0a;
+  --border: #2a2118;
+  --copper: #b5742a;
+  --gold: #e8c98a;
+  --text: #c4bcb1;
+  --muted: #7a6a58;
+  --muted2: #9a8870;
+}
+
+[data-theme="light"] {
+  --bg: #f5efe4;
+  --card: #ffffff;
+  --border: #d4c9b8;
+  --copper: #b5742a;
+  --gold: #8b5e1a;
+  --text: #2a1a08;
+  --muted: #7a6a58;
+  --muted2: #9a8870;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: Lora, serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-style: normal;
+}
+
+a {
+  color: var(--copper);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+* {
+  scrollbar-color: var(--border) var(--card);
+  scrollbar-width: thin;
+}
+
+.plus-mark {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.plus-mark::before,
+.plus-mark::after {
+  content: "";
+  position: absolute;
+  background: var(--gold);
+  border-radius: 1px;
+}
+
+.plus-mark::before {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.plus-mark::after {
+  width: 100%;
+  height: 2px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+/* FullCalendar CI-Overrides */
+.fc {
+  --fc-border-color: var(--border);
+  --fc-button-bg-color: var(--card);
+  --fc-button-border-color: var(--border);
+  --fc-button-text-color: var(--text);
+  --fc-button-hover-bg-color: var(--copper);
+  --fc-button-hover-border-color: var(--copper);
+  --fc-button-active-bg-color: var(--copper);
+  --fc-event-bg-color: var(--copper);
+  --fc-event-border-color: var(--copper);
+  --fc-event-text-color: var(--text);
+  --fc-today-bg-color: rgba(181, 116, 42, 0.08);
+  --fc-page-bg-color: var(--bg);
+  --fc-neutral-bg-color: var(--card);
+  --fc-list-event-hover-bg-color: var(--card);
+  font-family: var(--font-body);
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: var(--copper);
+  font-weight: 500;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: var(--border);
+}
+
+.fc .fc-scrollgrid {
+  border-color: var(--border);
 }
