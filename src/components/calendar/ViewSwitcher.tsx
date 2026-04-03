@@ -8,6 +8,8 @@ type ViewSwitcherProps = {
   onViewChange: (view: CalendarView) => void;
   onPrev: () => void;
   onNext: () => void;
+  onRefresh: () => void;
+  refreshing: boolean;
 };
 
 const views: { id: CalendarView; label: string; short: string }[] = [
@@ -22,6 +24,8 @@ export function ViewSwitcher({
   onViewChange,
   onPrev,
   onNext,
+  onRefresh,
+  refreshing,
 }: ViewSwitcherProps) {
   return (
     <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -44,6 +48,17 @@ export function ViewSwitcher({
           aria-label="Nächster Zeitraum"
         >
           →
+        </button>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing}
+          className="ml-1 flex h-9 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] px-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide text-[var(--text)] hover:border-[var(--copper)] disabled:opacity-50 sm:px-3 sm:text-xs"
+          aria-label="Kalenderdaten neu laden"
+          title="Kalenderdaten neu laden"
+        >
+          {refreshing ? "…" : "↻"}
+          <span className="ml-1 hidden sm:inline">{refreshing ? "Lädt …" : "Aktualisieren"}</span>
         </button>
       </div>
 

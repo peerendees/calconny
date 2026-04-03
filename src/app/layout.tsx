@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { PwaUpdateNotifier } from "@/components/pwa/PwaUpdateNotifier";
 import { Footer } from "@/components/ui/Footer";
 import { Header } from "@/components/ui/Header";
 import "./globals.css";
@@ -7,6 +8,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CalConny · BERENT.AI",
   description: "Interner Kalender für BERENT.AI",
+  appleWebApp: {
+    capable: true,
+    title: "CalConny",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#090806",
 };
 
 const themeScript = `
@@ -37,6 +47,7 @@ export default function RootLayout({
         <Script id="calconny-theme-init" strategy="beforeInteractive">
           {themeScript}
         </Script>
+        <PwaUpdateNotifier />
         <Header />
         <main className="flex flex-1 flex-col px-4 py-6 sm:px-6">{children}</main>
         <Footer />

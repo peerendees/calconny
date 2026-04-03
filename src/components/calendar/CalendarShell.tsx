@@ -26,16 +26,85 @@ function mapToInputs(events: CalendarEvent[]): EventInput[] {
   }));
 }
 
+function parseCalendarApi(data: unknown): { events: CalendarEvent[]; warnings?: string[] } {
+  if (
+    data &&
+    typeof data === "object" &&
+    "error" in data &&
+    (!("events" in data) || !(data as { events?: unknown }).events)
+  ) {
+    throw new Error(String((data as { error: unknown }).error));
+  }
+  if (Array.isArray(data)) {
+    return { events: data as CalendarEvent[] };
+  }
+  if (
+    data &&
+    typeof data === "object" &&
+    "events" in data &&
+    Array.isArray((data as { events: unknown }).events)
+  ) {
+    const o = data as { events: CalendarEvent[]; warnings?: string[] };
+    return { events: o.events, warnings: o.warnings };
+  }
+  throw new Error("Ungültige Kalender-Antwort");
+}
+
+async function loadCalendar(refresh: boolean): Promise<{ events: CalendarEvent[]; warnings?: string[] }> {
+  const url = refresh ? `/api/calendar?refresh=1&t=${Date.now()}` : "/api/calendar";
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: refresh
+      ? { "Cache-Control": "no-cache", Pragma: "no-cache" }
+      : {},
+  });
+  const data: unknown = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      data && typeof data === "object" && "error" in data
+        ? String((data as { error: unknown }).error)
+        : "Kalender konnte nicht geladen werden.",
+    );
+  }
+  return parseCalendarApi(data);
+}
+
 export function CalendarShell() {
   const calRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<EventInput[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [rangeTitle, setRangeTitle] = useState("");
   const [activeView, setActiveView] = useState<CalendarView>("dayGridMonth");
   const [narrow, setNarrow] = useState(false);
 
   const weekViewId = narrow ? "slidingWeekNarrow" : "slidingWeek";
+
+  const runLoad = useCallback(async (refresh: boolean) => {
+    if (refresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+    try {
+      const { events: evs, warnings: w } = await loadCalendar(refresh);
+      setEvents(mapToInputs(evs));
+      setWarnings(w ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unbekannter Fehler");
+      setWarnings([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void runLoad(false);
+  }, [runLoad]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -43,35 +112,6 @@ export function CalendarShell() {
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/calendar");
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            typeof data.error === "string" ? data.error : "Kalender konnte nicht geladen werden.",
-          );
-        }
-        if (!cancelled) {
-          setEvents(mapToInputs(data as CalendarEvent[]));
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Unbekannter Fehler");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const syncViewFromCalendar = useCallback((viewType: string) => {
@@ -118,18 +158,42 @@ export function CalendarShell() {
     return (
       <div className="rounded border border-[var(--border)] bg-[var(--card)] px-6 py-8 text-center">
         <p className="font-[family-name:var(--font-body)] text-[var(--text)]">{error}</p>
+        <button
+          type="button"
+          onClick={() => void runLoad(true)}
+          className="mt-4 rounded border border-[var(--copper)] bg-[var(--copper)] px-4 py-2 font-[family-name:var(--font-mono)] text-sm uppercase text-[var(--bg)]"
+        >
+          Erneut versuchen
+        </button>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden px-0">
+      {warnings.length > 0 ? (
+        <div
+          className="mb-4 rounded border border-[var(--border)] bg-[var(--card)] px-3 py-2 font-[family-name:var(--font-body)] text-sm text-[var(--muted2)]"
+          role="status"
+        >
+          <p className="font-[family-name:var(--font-mono)] text-xs uppercase text-[var(--muted)]">
+            Hinweis zu Feeds
+          </p>
+          <ul className="mt-1 list-inside list-disc">
+            {warnings.map((w, i) => (
+              <li key={`${i}-${w.slice(0, 40)}`}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <ViewSwitcher
         active={activeView}
         rangeTitle={rangeTitle}
         onViewChange={goView}
         onPrev={goPrev}
         onNext={goNext}
+        onRefresh={() => void runLoad(true)}
+        refreshing={refreshing}
       />
       <div className="mt-4 min-h-[480px] w-full max-w-full">
         <FullCalendar

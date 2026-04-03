@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# next-pwa (bei build --webpack generiert, Hash ändert sich)
+public/sw.js
+public/workbox-*.js
+
 # vercel
 .vercel
 

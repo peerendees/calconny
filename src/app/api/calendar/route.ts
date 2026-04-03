@@ -1,61 +1,83 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { getCalendarFeedUrlsFromEnv } from "@/lib/calendar-feed-env";
 import { fetchIcsFeed, getFetchErrorDetail } from "@/lib/fetch-ical-feed";
-import { normalizeIcalFeedUrl } from "@/lib/ical-feed-url";
 import { parseIcsToCalendarEvents } from "@/lib/ics-parser";
+import { mergeCalendarEvents } from "@/lib/merge-calendar-events";
+import type { CalendarEvent } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
-  const url = process.env.ICAL_FEED_URL;
-  if (!url?.trim()) {
+export async function GET(request: NextRequest) {
+  const forceRefresh =
+    request.nextUrl.searchParams.has("refresh") ||
+    request.headers.get("cache-control")?.toLowerCase().includes("no-cache") === true ||
+    request.headers.get("pragma") === "no-cache";
+
+  const urls = getCalendarFeedUrlsFromEnv();
+
+  if (urls.length === 0) {
     return NextResponse.json(
       {
         error:
-          "ICAL_FEED_URL ist nicht gesetzt. In Vercel: Project → Settings → Environment Variables → ICAL_FEED_URL (https:// oder webcal://) für Production setzen und neu deployen.",
+          "Kein Kalender-Abo konfiguriert. In Vercel: ICAL_FEED_URL und/oder ICAL_FEED_URLS (kommagetrennt) bzw. ICAL_FEED_URL_2 … setzen und neu deployen.",
       },
       { status: 500 },
     );
   }
 
-  const fetchUrl = normalizeIcalFeedUrl(url);
+  const chunks: CalendarEvent[][] = [];
+  const warnings: string[] = [];
 
-  let res: Response;
-  try {
-    res = await fetchIcsFeed(fetchUrl);
-  } catch (e) {
-    const detail = getFetchErrorDetail(e);
+  for (const fetchUrl of urls) {
+    let res: Response;
+    try {
+      res = await fetchIcsFeed(fetchUrl);
+    } catch (e) {
+      const detail = getFetchErrorDetail(e);
+      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
+      warnings.push(`${label}: ${detail}`);
+      continue;
+    }
+
+    if (!res.ok) {
+      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
+      warnings.push(`${label}: HTTP ${res.status}`);
+      continue;
+    }
+
+    const text = await res.text();
+    try {
+      chunks.push(parseIcsToCalendarEvents(text));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Parserfehler";
+      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
+      warnings.push(`${label}: ${message}`);
+    }
+  }
+
+  if (chunks.length === 0) {
     return NextResponse.json(
       {
-        error: `Kalender-Fetch fehlgeschlagen: ${detail}`,
+        error: "Kein Kalender konnte geladen werden.",
+        warnings,
       },
       { status: 502 },
     );
   }
 
-  if (!res.ok) {
-    return NextResponse.json(
-      { error: `Kalender-Fetch: HTTP ${res.status}` },
-      { status: 502 },
-    );
-  }
+  const events = mergeCalendarEvents(chunks);
 
-  const text = await res.text();
+  const cacheControl = forceRefresh
+    ? "private, no-store, must-revalidate"
+    : "s-maxage=300, stale-while-revalidate=60";
 
-  let events;
-  try {
-    events = parseIcsToCalendarEvents(text);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unbekannter Parserfehler";
-    return NextResponse.json(
-      { error: `ICS konnte nicht gelesen werden: ${message}` },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.json(events, {
-    headers: {
-      "Cache-Control": "s-maxage=300, stale-while-revalidate=60",
+  return NextResponse.json(
+    { events, warnings: warnings.length ? warnings : undefined },
+    {
+      headers: {
+        "Cache-Control": cacheControl,
+      },
     },
-  });
+  );
 }

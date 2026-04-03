@@ -13,3 +13,9 @@ export interface CalendarEvent {
 }
 
 export type CalendarView = "dayGridMonth" | "slidingWeek" | "listWeek";
+
+/** Antwort von GET /api/calendar */
+export interface CalendarApiResponse {
+  events: CalendarEvent[];
+  warnings?: string[];
+}
