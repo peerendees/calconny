@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { fetchIcsFeed, getFetchErrorDetail } from "@/lib/fetch-ical-feed";
 import { normalizeIcalFeedUrl } from "@/lib/ical-feed-url";
 import { parseIcsToCalendarEvents } from "@/lib/ics-parser";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
   const url = process.env.ICAL_FEED_URL;
@@ -20,14 +22,13 @@ export async function GET() {
 
   let res: Response;
   try {
-    res = await fetch(fetchUrl, {
-      next: { revalidate: 300 },
-      headers: { Accept: "text/calendar, text/plain, */*" },
-    });
+    res = await fetchIcsFeed(fetchUrl);
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Unbekannter Netzwerkfehler";
+    const detail = getFetchErrorDetail(e);
     return NextResponse.json(
-      { error: `Kalender-Fetch fehlgeschlagen: ${message}` },
+      {
+        error: `Kalender-Fetch fehlgeschlagen: ${detail}`,
+      },
       { status: 502 },
     );
   }
