@@ -16,45 +16,46 @@
 Was genau passiert / was erwartet wird / wo genau (Ansicht, Gerät)
 -->
 
-### [2026-04-10] Monatsübersicht: Zeilenhöhe, Umfang, Navigation
+### [2026-04-10] Datum/Uhrzeit: Abgleich mit Sonner-Referenz (optional)
 
-Die Zeilenhöhe wächst, wenn mehr als ein Termin in einer Zelle steht. Hier braucht es eine Logik mit einem Button zum Erweitern (drei Punkte oder ähnliches).
+**Schrift:** positiv beibehalten.
 
-Insgesamt ist die Monatsübersicht noch zu groß, weil dort mehr als nur die Tage des aktuellen Monats angezeigt werden. Das müssen wir radikal kürzen, oder wir überlegen, auf vier Zeilen zu verkürzen und durch weiches Scrollen weiterzukommen statt durch Links- und Rechts-Pfeile. Details klären wir im nächsten Briefing.
-
-### [2026-04-10] Wochenansicht: Kopfzeile & „Ganztägig“ – Feintuning offen
-
-**Positiv:** Die Eintragung mit **Wochentag** und darunter **Tagesdatum** ist grundsätzlich stimmig; **CI-Farbe** (Kupfer) für Akzente ist erwünscht – bitte im Betrieb prüfen.
-
-**Nachholbedarf:** Die Darstellung ist **insgesamt noch zu groß** (v. a. die **Tageszahl**). Typografie und Abstände weiter verkleinern, bis es sich „richtig“ anfühlt.
-
-**„Ganztägig“** (Achsen-Beschriftung links in der Ganztags-Zeile): weiterhin **zu groß** bzw. wuchtig – hier ist noch **Nachholbedarf** (kleinere Schrift, ggf. kürzeres Label oder schmalere Spalte).
-
-### [2026-04-10] Toolbar: Ansichtsbuttons liegen nicht im Footer (Hinweis)
-
-Die **Ansichtsbuttons** sind in **`ViewSwitcher.tsx`**, nicht in **`Footer.tsx`** (dort nur Impressum und Link zur Hauptseite).
-
-### [2026-04-10] Monatsansicht: Punkte im Raster – Analyse nötig
-
-**Screenshot:** [docs/feedback/month-grid-dots-2026-04-10.png](docs/feedback/month-grid-dots-2026-04-10.png)
-
-In der **Monatsübersicht** erscheinen **markante Punkte** (z. B. braune Kreise in einzelnen Tageszellen) sowie **weitere kleine Symbole**. Es ist **unklar**, wie diese **genau zustande kommen** (z. B. FullCalendar-Event-Darstellung, **BER-42 §3**-CSS mit verstecktem Text, Mehrfach-Events, `navLinks`, andere FullCalendar-Standard-Elemente).
-
-**Aufgabe:** **Analyse** im nächsten Schritt/Briefing – Datenfluss, DOM/CSS und erwartetes Nutzerfeedback (Lesbarkeit, Klick/Tap) klären, bevor weitere Designänderungen.
-
-### [2026-04-10] Datum/Uhrzeit: Anordnung prüfen; Referenz Sonner; Schrift positiv; Layout-Wunsch
-
-**Schrift:** Die verwendete **Schrift** wird **positiv** bewertet.
-
-**Anordnung „Thema Datum“:** Es muss **geprüft** werden, ob die **Anordnung** (bzw. das stilistische Muster) so **bleiben** soll wie bei **`berent-ai-mail/src/components/ui/sonner.tsx`** (Toaster/Sonner-Komponente – ggf. als Referenz für Titel/Beschreibung/Zeilenführung, nicht zwingend 1:1 übertragbar).
-
-**Layout-Wunsch (gefühlsmäßig, nächstes Briefing):** Das **Datum** soll **links** stehen, die **Uhrzeit** **rechts**, **über** der **Beschreibung des Termins** (eine Zeile: Datum links · Uhrzeit rechts, darunter der Beschreibungstext). Bezug genannt: **`calconny/src/components/ui/Footer.tsx`** – die **aktuelle** CalConny-`Footer.tsx` enthält **kein** Termin-Datum/-Uhrzeit (nur Branding und Links). Vermutlich ist die **Termin-Detailansicht** (z. B. Modal nach Tap, Listenkarte) gemeint; **exakte Komponente und Umsetzung** klären wir im **nächsten Briefing**.
+**Offen (niedrige Priorität):** Ob die **Anordnung** langfristig dem Muster aus **`berent-ai-mail/src/components/ui/sonner.tsx`** folgen soll (Titel/Beschreibung/Zeilenführung), ist **nicht zwingend** – Layout in **EventCard** und Modal ist nach **BER-42 Teil 2** umgesetzt (Datum links, Uhrzeit rechts, Beschreibung darunter).
 
 ---
 
 ## Erledigt
 
 <!-- Abgearbeitete Punkte hierher verschieben -->
+
+### [2026-04-10] BER-42 Teil 2 – Mobile Feinschliff (Briefing `.cursor/briefings/BER-42-mobile-teil2.md`)
+
+- **EventCard + EventDetailModal:** Erste Zeile `justify-between` – Datum links, Uhrzeit rechts (`font-mono`, `text-xs`, `--muted`); Titel (`--text`); Beschreibung (`font-light`, `text-sm`, `--muted2`, `line-clamp-2`); Ort mit 📍 falls gesetzt.
+- **Monatsansicht:** `fixedWeekCount={false}`; mobil `dayMaxEvents={2}`; CSS: Zellenrahmen `min/max-height`, `daygrid-more-link` kupfer/mono; Dots: kupferfarbene 6px-Kreise; Hinweis: **Tap auf Tageszahl** nutzt `navLinks` zur Tagesdetail-Ansicht (Dots nur Indikator).
+- **Wochenansicht:** Kleinere Tageszahl (`.calconny-week-day-num`), Achsen- und Slot-Typo; mobil `allDayText="GT"`; Ganztags-Zeile im Zeitraster kompakter.
+- **Toolbar:** Ansichtsbuttons liegen in **`ViewSwitcher.tsx`**, nicht im Footer – dokumentiert und gewollt.
+
+### [2026-04-10] Monatsübersicht: Zeilenhöhe, Umfang, Navigation
+
+Umgesetzt in **BER-42 Teil 2** (`fixedWeekCount`, `dayMaxEvents`, kompakte Zellen, „mehr“-Link). Weitere Iteration nur bei neuem Feedback.
+
+### [2026-04-10] Wochenansicht: Kopfzeile & „Ganztägig“ – Feintuning offen
+
+Umgesetzt in **BER-42 Teil 2** (siehe oben). CI-Farben im Betrieb prüfen bleibt Nutzer-Feedback.
+
+### [2026-04-10] Toolbar: Ansichtsbuttons liegen nicht im Footer (Hinweis)
+
+Die **Ansichtsbuttons** sind in **`ViewSwitcher.tsx`**, nicht in **`Footer.tsx`** (dort nur Impressum und Link zur Hauptseite). Gewollt.
+
+### [2026-04-10] Monatsansicht: Punkte im Raster – Analyse nötig
+
+**Screenshot:** [docs/feedback/month-grid-dots-2026-04-10.png](docs/feedback/month-grid-dots-2026-04-10.png)
+
+**Klarstellung:** Punkte sind **FullCalendar-Events** mit **BER-42**-CSS (Text ausgeblendet, Kreise). **Tap:** Tageszahl über **`navLinks`** → Wechsel in die Tagesansicht; Dots müssen nicht separat tappbar sein. CSS in **BER-42 Teil 2** nachgezogen (kupferfarbene Kreise).
+
+### [2026-04-10] Datum/Uhrzeit: Layout-Wunsch (Listenkarte / Modal)
+
+Layout **Datum links · Uhrzeit rechts · Beschreibung darunter** in **EventCard** und Modal umgesetzt (**BER-42 Teil 2**). Bezug **Footer.tsx** im ursprünglichen Feedback war irreführend; relevant sind **EventCard** / **EventDetailModal**.
 
 ### [2026-04-10] Listenansicht + Event-Detail: Kalenderdatum angezeigt
 

@@ -348,6 +348,9 @@ export function CalendarShell() {
           height="auto"
           headerToolbar={false}
           navLinks
+          fixedWeekCount={false}
+          dayMaxEvents={narrow ? 2 : false}
+          allDayText={narrow ? "GT" : undefined}
           events={events}
           views={{
             slidingWeek: {
@@ -376,7 +379,7 @@ export function CalendarShell() {
                 <span className="font-[family-name:var(--font-mono)] text-[0.6rem] font-medium uppercase tracking-wide text-[var(--muted)]">
                   {weekdayAbbrevDe(d)}
                 </span>
-                <span className="font-[family-name:var(--font-body)] text-lg font-semibold leading-none tabular-nums text-[var(--copper)]">
+                <span className="calconny-week-day-num font-[family-name:var(--font-body)] text-lg font-semibold leading-none tabular-nums text-[var(--copper)]">
                   {d.getDate()}
                 </span>
               </div>

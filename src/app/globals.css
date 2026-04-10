@@ -255,18 +255,39 @@ a:hover {
   color: var(--muted);
 }
 
-/* BER-42 §3: Monatsansicht mobil – Events als Punkte, kompakter Header */
+/* BER-42 Teil 2: Monatsansicht mobil – kompakte Zellen, Dots, „mehr“-Link; Woche – kleinere Typo */
 @media (max-width: 639px) {
+  .fc .fc-daygrid-body .fc-daygrid-day-frame {
+    min-height: 2.5rem;
+    max-height: 3.5rem;
+    overflow: hidden;
+  }
+
+  .fc .fc-daygrid-body .fc-daygrid-day-events {
+    max-height: 1.2rem;
+    overflow: hidden;
+  }
+
+  .fc .fc-daygrid-more-link {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--copper);
+  }
+
+  /* Event-Markierungen: kupferfarbene Kreise (Text ausgeblendet); Tap auf Tageszahl → navLinks */
   .fc .fc-daygrid-body .fc-daygrid-event {
     font-size: 0 !important;
     line-height: 0 !important;
-    padding: 2px !important;
-    margin: 1px auto !important;
-    max-width: 10px;
-    max-height: 10px;
-    min-width: 8px;
-    min-height: 8px;
+    min-height: 6px;
+    max-height: 6px;
+    width: 6px;
+    max-width: 6px;
     border-radius: 50%;
+    padding: 0 !important;
+    margin: 1px auto !important;
+    display: block;
+    background: var(--copper) !important;
+    border: none !important;
     overflow: hidden;
   }
 
@@ -291,6 +312,23 @@ a:hover {
 
   .fc .fc-list-event-title {
     font-size: 0.85rem;
+  }
+
+  /* Wochenansicht: Tageszahl kleiner */
+  .calconny-week-day-head .calconny-week-day-num {
+    font-size: 1rem;
+  }
+
+  .fc .fc-timegrid-axis-cushion,
+  .fc .fc-timegrid-slot-label-cushion.fc-scrollgrid-shrink-cushion,
+  .fc .fc-timegrid-body .fc-timegrid-axis-table .fc-scrollgrid-shrink-cushion {
+    font-size: 0.6rem;
+    padding: 0 2px;
+  }
+
+  /* Ganztags-Zeile im Wochen-Zeitraster (nicht Monats-Grid) */
+  .fc .fc-timegrid .fc-daygrid-body {
+    font-size: 0.7rem;
   }
 
   /* BER-42 §5: Wochenansicht nutzt Viewport-Höhe (Chrome-URL-Leiste: dvh) */
