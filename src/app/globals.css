@@ -231,3 +231,71 @@ a:hover {
 .fc .calconny-week-day-head {
   min-width: 0;
 }
+
+/* Priorität 0 (BER-42): Termintext in der Wochenansicht auf schmalen Viewports lesbar */
+@media (max-width: 639px) {
+  .fc .fc-timegrid-event .fc-event-title,
+  .fc .fc-timegrid-event .fc-event-time {
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+}
+
+/* Ganztags-Beschriftung links („Ganztägig“): kompakt, umbrechen; Feintuning siehe FEEDBACK.md */
+.fc .fc-timegrid-body .fc-timegrid-axis-table .fc-scrollgrid-shrink-frame {
+  min-width: 2.75rem;
+}
+
+.fc .fc-timegrid-body .fc-timegrid-axis-table .fc-scrollgrid-shrink-cushion {
+  font-size: 0.55rem;
+  line-height: 1.15;
+  white-space: normal;
+  overflow: visible;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* BER-42 §3: Monatsansicht mobil – Events als Punkte, kompakter Header */
+@media (max-width: 639px) {
+  .fc .fc-daygrid-body .fc-daygrid-event {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    padding: 2px !important;
+    margin: 1px auto !important;
+    max-width: 10px;
+    max-height: 10px;
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  .fc .fc-daygrid-body .fc-daygrid-event .fc-event-main {
+    min-height: 0;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+
+  /* BER-42 §4: responsive Typografie (Listen + Zeitraster) */
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.65rem;
+  }
+
+  .fc .fc-timegrid-slot-label,
+  .fc .fc-timegrid-slot-label-cushion {
+    font-size: 0.65rem;
+  }
+
+  .fc .fc-list-event-title {
+    font-size: 0.85rem;
+  }
+
+  /* BER-42 §5: Wochenansicht nutzt Viewport-Höhe (Chrome-URL-Leiste: dvh) */
+  .fc .fc-timegrid {
+    max-height: calc(100dvh - 220px);
+    overflow-y: auto;
+  }
+}

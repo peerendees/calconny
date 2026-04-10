@@ -20,11 +20,22 @@ type ViewSwitcherProps = {
   refreshing: boolean;
 };
 
+/** Reihenfolge: Liste → Woche → Monat (mittig in der Zeile). */
 const views: { id: CalendarView; label: string; short: string }[] = [
-  { id: "dayGridMonth", label: "Monat", short: "M" },
-  { id: "slidingWeek", label: "Woche", short: "W" },
   { id: "listWeek", label: "Liste", short: "L" },
+  { id: "slidingWeek", label: "Woche", short: "W" },
+  { id: "dayGridMonth", label: "Monat", short: "M" },
 ];
+
+const viewBtnClass = [
+  "touch-manipulation min-h-11 min-w-[2.75rem] rounded border px-2 py-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide transition-colors sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs",
+].join(" ");
+
+const navBtnClass =
+  "touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]";
+
+const refreshBtnClass =
+  "touch-manipulation flex min-h-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] px-3 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide text-[var(--text)] hover:border-[var(--copper)] disabled:opacity-50 sm:px-3 sm:text-xs";
 
 export function ViewSwitcher({
   active,
@@ -41,107 +52,114 @@ export function ViewSwitcher({
   refreshing,
 }: ViewSwitcherProps) {
   return (
-    <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-1 sm:justify-start">
-        {showWeekStepNav ? (
-          <>
+    <div className="flex w-full max-w-full flex-col gap-2">
+      {/* Zeile 1: Links-Navigation | L / W / M (zentriert) | Rechts-Navigation + Aktualisieren */}
+      <div className="grid min-w-0 min-h-[2.75rem] w-full grid-cols-[1fr_auto_1fr] items-center gap-x-1 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-center justify-start gap-1">
+          {showWeekStepNav ? (
+            <>
+              <button
+                type="button"
+                onClick={onPrevWeek}
+                className={navBtnClass}
+                aria-label="Eine Woche zurück"
+                title="Eine Woche zurück"
+              >
+                «
+              </button>
+              <button
+                type="button"
+                onClick={onPrevDay}
+                className={navBtnClass}
+                aria-label="Einen Tag zurück"
+                title="Einen Tag zurück"
+              >
+                ‹
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              onClick={onPrevWeek}
-              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-              aria-label="Eine Woche zurück"
-              title="Eine Woche zurück"
+              onClick={onPrevPeriod}
+              className={navBtnClass}
+              aria-label="Vorheriger Zeitraum"
             >
-              «
+              ←
             </button>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center justify-center gap-1">
+          {views.map((v) => {
+            const isOn = active === v.id;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => onViewChange(v.id)}
+                className={[
+                  viewBtnClass,
+                  isOn
+                    ? "border-[var(--copper)] bg-[var(--copper)] text-[var(--bg)]"
+                    : "border-[var(--border)] bg-[var(--card)] text-[var(--muted)] hover:border-[var(--copper)]",
+                ].join(" ")}
+              >
+                <span className="sm:hidden">{v.short}</span>
+                <span className="hidden sm:inline">{v.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+          {showWeekStepNav ? (
+            <>
+              <button
+                type="button"
+                onClick={onNextDay}
+                className={navBtnClass}
+                aria-label="Einen Tag vor"
+                title="Einen Tag vor"
+              >
+                ›
+              </button>
+              <button
+                type="button"
+                onClick={onNextWeek}
+                className={navBtnClass}
+                aria-label="Eine Woche vor"
+                title="Eine Woche vor"
+              >
+                »
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              onClick={onPrevDay}
-              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-              aria-label="Einen Tag zurück"
-              title="Einen Tag zurück"
+              onClick={onNextPeriod}
+              className={navBtnClass}
+              aria-label="Nächster Zeitraum"
             >
-              ‹
+              →
             </button>
-          </>
-        ) : (
+          )}
           <button
             type="button"
-            onClick={onPrevPeriod}
-            className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-            aria-label="Vorheriger Zeitraum"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className={refreshBtnClass}
+            aria-label="Kalenderdaten neu laden"
+            title="Kalenderdaten neu laden"
           >
-            ←
+            {refreshing ? "…" : "↻"}
+            <span className="ml-1 hidden sm:inline">{refreshing ? "Lädt …" : "Aktualisieren"}</span>
           </button>
-        )}
-        <p className="min-w-0 flex-1 truncate text-center font-[family-name:var(--font-body)] text-sm text-[var(--text)] sm:text-left sm:text-base">
-          {rangeTitle}
-        </p>
-        {showWeekStepNav ? (
-          <>
-            <button
-              type="button"
-              onClick={onNextDay}
-              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-              aria-label="Einen Tag vor"
-              title="Einen Tag vor"
-            >
-              ›
-            </button>
-            <button
-              type="button"
-              onClick={onNextWeek}
-              className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-base text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-              aria-label="Eine Woche vor"
-              title="Eine Woche vor"
-            >
-              »
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={onNextPeriod}
-            className="touch-manipulation flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] font-[family-name:var(--font-mono)] text-[var(--text)] hover:border-[var(--copper)] active:bg-[var(--card)]"
-            aria-label="Nächster Zeitraum"
-          >
-            →
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="touch-manipulation ml-1 flex min-h-11 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--card)] px-3 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide text-[var(--text)] hover:border-[var(--copper)] disabled:opacity-50 sm:px-3 sm:text-xs"
-          aria-label="Kalenderdaten neu laden"
-          title="Kalenderdaten neu laden"
-        >
-          {refreshing ? "…" : "↻"}
-          <span className="ml-1 hidden sm:inline">{refreshing ? "Lädt …" : "Aktualisieren"}</span>
-        </button>
+        </div>
       </div>
 
-      <div className="flex justify-center gap-1 sm:justify-end">
-        {views.map((v) => {
-          const isOn = active === v.id;
-          return (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => onViewChange(v.id)}
-              className={[
-                "touch-manipulation min-h-11 min-w-[2.75rem] rounded border px-2 py-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide transition-colors sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs",
-                isOn
-                  ? "border-[var(--copper)] bg-[var(--copper)] text-[var(--bg)]"
-                  : "border-[var(--border)] bg-[var(--card)] text-[var(--muted)] hover:border-[var(--copper)]",
-              ].join(" ")}
-            >
-              <span className="sm:hidden">{v.short}</span>
-              <span className="hidden sm:inline">{v.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <p className="w-full text-center font-[family-name:var(--font-body)] text-sm text-[var(--text)] sm:text-left sm:text-base">
+        {rangeTitle}
+      </p>
     </div>
   );
 }

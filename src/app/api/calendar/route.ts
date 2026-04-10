@@ -8,6 +8,37 @@ import type { CalendarEvent } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+/** Erste Events als JSON in Logs (lokal, oder Vercel mit CALCONNY_DEBUG_ICS=1). */
+function logParsedEventsDebug(events: CalendarEvent[]): void {
+  const enabled =
+    process.env.CALCONNY_DEBUG_ICS === "1" || process.env.NODE_ENV === "development";
+  if (!enabled) return;
+
+  const sample = events.slice(0, 3).map((e) => ({
+    title: e.title,
+    start: e.start,
+    end: e.end,
+    location: e.location ?? null,
+    descriptionLen: e.description?.length ?? 0,
+    descriptionPreview:
+      e.description && e.description.length > 0
+        ? `${e.description.slice(0, 120)}${e.description.length > 120 ? "…" : ""}`
+        : null,
+  }));
+  const placeholderTitles = events.filter(
+    (e) => !e.title.trim() || e.title === "(Ohne Titel)",
+  ).length;
+
+  console.log(
+    "[calconny/api/calendar] Parsed events sample (first 3):",
+    JSON.stringify(sample, null, 2),
+  );
+  console.log("[calconny/api/calendar] stats:", {
+    total: events.length,
+    placeholderOrEmptyTitles: placeholderTitles,
+  });
+}
+
 export async function GET(request: NextRequest) {
   const forceRefresh =
     request.nextUrl.searchParams.has("refresh") ||
@@ -67,6 +98,7 @@ export async function GET(request: NextRequest) {
   }
 
   const events = mergeCalendarEvents(chunks);
+  logParsedEventsDebug(events);
 
   const cacheControl = forceRefresh
     ? "private, no-store, must-revalidate"

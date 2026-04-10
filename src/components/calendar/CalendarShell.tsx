@@ -1,17 +1,19 @@
 "use client";
 
-import type { EventInput } from "@fullcalendar/core";
+import type { EventApi, EventClickArg, EventInput } from "@fullcalendar/core";
 import deLocale from "@fullcalendar/core/locales/de";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatGermanRangeTitle } from "@/lib/format-calendar-title";
+import { formatListEventDateLabel } from "@/lib/format-list-event-date";
 import { formatWeekAxisTime } from "@/lib/format-week-time";
 import type { CalendarEvent, CalendarView } from "@/lib/types";
 import { EventCard } from "./EventCard";
+import { EventDetailModal } from "./EventDetailModal";
 import { ViewSwitcher } from "./ViewSwitcher";
 
 function mapToInputs(events: CalendarEvent[]): EventInput[] {
@@ -87,14 +89,50 @@ const weekTimeGridOpts = {
   },
 };
 
+/** Custom-Views heißen slidingWeek / slidingWeekNarrow – nicht „timeGrid“ im view.type. */
+function isWeekGridView(viewType: string): boolean {
+  return (
+    viewType === "slidingWeek" ||
+    viewType === "slidingWeekNarrow" ||
+    viewType.includes("timeGrid")
+  );
+}
+
 function weekdayAbbrevDe(d: Date): string {
   const short = new Intl.DateTimeFormat("de-DE", { weekday: "short" }).format(d);
   const base = short.replace(/\.$/, "").trim();
   return `${base.toUpperCase()}.`;
 }
 
+function formatEventTimeLabel(ev: EventApi): string {
+  if (ev.allDay) {
+    return "Ganztägig";
+  }
+  const start = ev.start;
+  const end = ev.end;
+  if (!start) {
+    return "";
+  }
+  if (end) {
+    return `${formatWeekAxisTime(start)} – ${formatWeekAxisTime(end)}`;
+  }
+  return formatWeekAxisTime(start);
+}
+
+type EventDetailState = {
+  title: string;
+  dateLabel: string;
+  timeLabel: string;
+  location?: string;
+  description?: string;
+};
+
+const SWIPE_MIN_PX = 50;
+
 export function CalendarShell() {
   const calRef = useRef<FullCalendar>(null);
+  const swipeAreaRef = useRef<HTMLDivElement>(null);
+  const swipeStartRef = useRef({ x: 0, y: 0 });
   const [events, setEvents] = useState<EventInput[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,6 +141,7 @@ export function CalendarShell() {
   const [rangeTitle, setRangeTitle] = useState("");
   const [activeView, setActiveView] = useState<CalendarView>("dayGridMonth");
   const [narrow, setNarrow] = useState(false);
+  const [eventDetail, setEventDetail] = useState<EventDetailState | null>(null);
 
   const weekViewId = narrow ? "slidingWeekNarrow" : "slidingWeek";
 
@@ -130,12 +169,43 @@ export function CalendarShell() {
     void runLoad(false);
   }, [runLoad]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
     const update = () => setNarrow(mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
+  }, []);
+
+  /** BER-42: Wisch links → nächster Zeitraum, rechts → vorheriger (alle Ansichten). */
+  useEffect(() => {
+    const el = swipeAreaRef.current;
+    if (!el) return;
+
+    function onTouchStart(e: TouchEvent) {
+      const t = e.touches[0];
+      swipeStartRef.current = { x: t.clientX, y: t.clientY };
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swipeStartRef.current.x;
+      const dy = t.clientY - swipeStartRef.current.y;
+      if (Math.abs(dx) < SWIPE_MIN_PX) return;
+      if (Math.abs(dx) < Math.abs(dy)) return;
+
+      const api = calRef.current?.getApi();
+      if (!api) return;
+      if (dx > 0) api.prev();
+      else api.next();
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
   }, []);
 
   const syncViewFromCalendar = useCallback((viewType: string) => {
@@ -209,8 +279,33 @@ export function CalendarShell() {
     );
   }
 
+  function handleEventClick(info: EventClickArg) {
+    info.jsEvent.preventDefault();
+    const ev = info.event;
+    const start = ev.start;
+    const dateLabel = start ? formatListEventDateLabel(start) : "";
+    setEventDetail({
+      title: (ev.title && String(ev.title).trim()) || "(Ohne Titel)",
+      dateLabel,
+      timeLabel: formatEventTimeLabel(ev),
+      location: ev.extendedProps?.location as string | undefined,
+      description: ev.extendedProps?.description as string | undefined,
+    });
+  }
+
   return (
     <div className="w-full max-w-full overflow-x-hidden px-0">
+      {eventDetail ? (
+        <EventDetailModal
+          open
+          onClose={() => setEventDetail(null)}
+          title={eventDetail.title}
+          dateLabel={eventDetail.dateLabel}
+          timeLabel={eventDetail.timeLabel}
+          location={eventDetail.location}
+          description={eventDetail.description}
+        />
+      ) : null}
       {warnings.length > 0 ? (
         <div
           className="mb-4 rounded border border-[var(--border)] bg-[var(--card)] px-3 py-2 font-[family-name:var(--font-body)] text-sm text-[var(--muted2)]"
@@ -240,12 +335,15 @@ export function CalendarShell() {
         onRefresh={() => void runLoad(true)}
         refreshing={refreshing}
       />
-      <div className="mt-4 min-h-[480px] w-full max-w-full">
+      <div
+        ref={swipeAreaRef}
+        className="calconny-calendar-swipe mt-4 min-h-[480px] w-full max-w-full touch-pan-y"
+      >
         <FullCalendar
           ref={calRef}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
           locale={deLocale}
-          initialView="dayGridMonth"
+          initialView={narrow ? "listWeek" : "dayGridMonth"}
           firstDay={1}
           height="auto"
           headerToolbar={false}
@@ -269,16 +367,16 @@ export function CalendarShell() {
             setRangeTitle(formatGermanRangeTitle(arg.start, arg.end));
           }}
           dayHeaderContent={(arg) => {
-            if (!arg.view.type.includes("timeGrid")) {
+            if (!isWeekGridView(arg.view.type)) {
               return undefined;
             }
             const d = arg.date;
             return (
-              <div className="calconny-week-day-head flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-t-lg bg-[var(--card)] px-1 py-2">
-                <span className="font-[family-name:var(--font-mono)] text-[0.65rem] font-medium uppercase tracking-wide text-[var(--muted)]">
+              <div className="calconny-week-day-head flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-t-lg bg-[var(--card)] px-0.5 py-1.5">
+                <span className="font-[family-name:var(--font-mono)] text-[0.6rem] font-medium uppercase tracking-wide text-[var(--muted)]">
                   {weekdayAbbrevDe(d)}
                 </span>
-                <span className="text-2xl font-semibold leading-none text-[var(--text)] tabular-nums">
+                <span className="font-[family-name:var(--font-body)] text-lg font-semibold leading-none tabular-nums text-[var(--copper)]">
                   {d.getDate()}
                 </span>
               </div>
@@ -287,28 +385,69 @@ export function CalendarShell() {
           viewDidMount={(arg) => {
             syncViewFromCalendar(arg.view.type);
           }}
+          eventClick={handleEventClick}
           eventContent={(arg) => {
             if (arg.view.type.startsWith("list")) {
+              const start = arg.event.start;
+              const dateLabel = start ? formatListEventDateLabel(start) : "";
               return (
                 <EventCard
                   title={arg.event.title}
+                  dateLabel={dateLabel}
                   timeLabel={arg.timeText}
                   location={arg.event.extendedProps?.location as string | undefined}
+                  description={arg.event.extendedProps?.description as string | undefined}
                 />
               );
             }
-            if (arg.view.type.includes("timeGrid") && !arg.event.allDay) {
+            if (arg.view.type === "dayGridMonth") {
+              const title = arg.event.title || "(Ohne Titel)";
+              const timeLabel = arg.event.allDay ? "Ganztägig" : arg.timeText || "";
+              return (
+                <div className="calconny-month-event flex min-w-0 flex-col gap-px py-0.5">
+                  {timeLabel ? (
+                    <div className="fc-event-time text-[0.65rem] leading-tight text-[var(--muted)]">
+                      {timeLabel}
+                    </div>
+                  ) : null}
+                  <div className="fc-event-title min-w-0 truncate text-[0.75rem] leading-snug text-[var(--text)]">
+                    {title}
+                  </div>
+                </div>
+              );
+            }
+            if (isWeekGridView(arg.view.type) && !arg.event.allDay) {
               const start = arg.event.start;
               if (!start) return undefined;
               const end = arg.event.end;
               const timeStr = end
                 ? `${formatWeekAxisTime(start)} – ${formatWeekAxisTime(end)}`
                 : formatWeekAxisTime(start);
+              const desc = (arg.event.extendedProps?.description as string | undefined)?.trim();
               return (
-                <>
+                <div className="calconny-week-timed-event flex min-w-0 flex-col gap-0.5">
                   <div className="fc-event-time">{timeStr}</div>
                   <div className="fc-event-title">{arg.event.title}</div>
-                </>
+                  {desc ? (
+                    <div className="line-clamp-2 font-[family-name:var(--font-body)] text-[0.65rem] leading-snug text-[var(--muted2)]">
+                      {desc}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }
+            if (isWeekGridView(arg.view.type) && arg.event.allDay) {
+              const title = arg.event.title || "(Ohne Titel)";
+              const desc = (arg.event.extendedProps?.description as string | undefined)?.trim();
+              return (
+                <div className="calconny-week-allday-event flex min-w-0 flex-col gap-0.5">
+                  <div className="fc-event-title text-[0.8rem] leading-tight">{title}</div>
+                  {desc ? (
+                    <div className="line-clamp-2 font-[family-name:var(--font-body)] text-[0.65rem] leading-snug text-[var(--muted2)]">
+                      {desc}
+                    </div>
+                  ) : null}
+                </div>
               );
             }
             return undefined;
