@@ -28,11 +28,20 @@ Was genau passiert / was erwartet wird / wo genau (Ansicht, Gerät)
 
 <!-- Abgearbeitete Punkte hierher verschieben -->
 
+### [2026-04-10] BER-42 Teil 3 – Bugfixes und UX-Feinschliff (Briefing `.cursor/briefings/BER-42-mobile-teil3.md`)
+
+- **Listenansicht / EventCard:** Standard zugeklappt (Datum + Uhrzeit eine Zeile, Titel `line-clamp-1`); Tap auf den Eintrag klappt Beschreibung (max. 2 Zeilen) und Ort auf (`useState`, sanfte `grid-template-rows`-Transition). Listenansicht öffnet kein Modal mehr – Details nur per Aufklappen; andere Ansichten: Modal bei Event-Tap unverändert.
+- **Zeitraum-Titel:** `formatGermanRangeTitle` – ein Kalendertag als „Do., 24. April 2026“ statt „24. – 24. …“; Monatsansicht nur **„April 2026“** via `formatMonthYearGerman` + `datesSet` bei `dayGridMonth`.
+- **Mehrtägige Ganztags-Events (Woche):** Ursache war CSS aus der Monatsansicht (Dots auf **allen** `.fc-daygrid-body`-Events), das auch die **Ganztags-Zeile** der Woche traf – Regeln auf **`.fc-dayGridMonth-view`** begrenzt. Zusätzlich **ics-parser:** bei Ganztags-Events mit `end <= start` wird `end` auf **start + 1 Tag** normalisiert.
+- **Ganztags-Achse mobil:** `allDayText="☀"` statt „GT“.
+- **Toolbar:** `flex-nowrap` in den drei Spalten, kleineres `gap` mobil; **Aktualisieren** nur ab `sm` (`hidden sm:flex`).
+- **Monatsansicht:** Kopfzeile Mo–So explizit per CSS (`.fc-dayGridMonth-view .fc-col-header-cell`); Tageszahl **min. 44×44 px** Tap-Fläche.
+
 ### [2026-04-10] BER-42 Teil 2 – Mobile Feinschliff (Briefing `.cursor/briefings/BER-42-mobile-teil2.md`)
 
 - **EventCard + EventDetailModal:** Erste Zeile `justify-between` – Datum links, Uhrzeit rechts (`font-mono`, `text-xs`, `--muted`); Titel (`--text`); Beschreibung (`font-light`, `text-sm`, `--muted2`, `line-clamp-2`); Ort mit 📍 falls gesetzt.
 - **Monatsansicht:** `fixedWeekCount={false}`; mobil `dayMaxEvents={2}`; CSS: Zellenrahmen `min/max-height`, `daygrid-more-link` kupfer/mono; Dots: kupferfarbene 6px-Kreise; Hinweis: **Tap auf Tageszahl** nutzt `navLinks` zur Tagesdetail-Ansicht (Dots nur Indikator).
-- **Wochenansicht:** Kleinere Tageszahl (`.calconny-week-day-num`), Achsen- und Slot-Typo; mobil `allDayText="GT"`; Ganztags-Zeile im Zeitraster kompakter.
+- **Wochenansicht:** Kleinere Tageszahl (`.calconny-week-day-num`), Achsen- und Slot-Typo; mobil `allDayText` siehe **BER-42 Teil 3** (☀); Ganztags-Zeile im Zeitraster kompakter.
 - **Toolbar:** Ansichtsbuttons liegen in **`ViewSwitcher.tsx`**, nicht im Footer – dokumentiert und gewollt.
 
 ### [2026-04-10] Monatsübersicht: Zeilenhöhe, Umfang, Navigation

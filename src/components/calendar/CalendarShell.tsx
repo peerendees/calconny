@@ -8,7 +8,7 @@ import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatGermanRangeTitle } from "@/lib/format-calendar-title";
+import { formatGermanRangeTitle, formatMonthYearGerman } from "@/lib/format-calendar-title";
 import { formatListEventDateLabel } from "@/lib/format-list-event-date";
 import { formatWeekAxisTime } from "@/lib/format-week-time";
 import type { CalendarEvent, CalendarView } from "@/lib/types";
@@ -350,7 +350,7 @@ export function CalendarShell() {
           navLinks
           fixedWeekCount={false}
           dayMaxEvents={narrow ? 2 : false}
-          allDayText={narrow ? "GT" : undefined}
+          allDayText={narrow ? "☀" : undefined}
           events={events}
           views={{
             slidingWeek: {
@@ -367,7 +367,11 @@ export function CalendarShell() {
             },
           }}
           datesSet={(arg) => {
-            setRangeTitle(formatGermanRangeTitle(arg.start, arg.end));
+            setRangeTitle(
+              arg.view.type === "dayGridMonth"
+                ? formatMonthYearGerman(arg.view.calendar.getDate())
+                : formatGermanRangeTitle(arg.start, arg.end),
+            );
           }}
           dayHeaderContent={(arg) => {
             if (!isWeekGridView(arg.view.type)) {

@@ -37,6 +37,24 @@ function logParsedEventsDebug(events: CalendarEvent[]): void {
     total: events.length,
     placeholderOrEmptyTitles: placeholderTitles,
   });
+
+  const multiDayAllDay = events.filter(
+    (e) => e.allDay && e.end && e.start.slice(0, 10) !== e.end.slice(0, 10),
+  );
+  if (multiDayAllDay.length > 0) {
+    console.log(
+      "[calconny/api/calendar] multi-day all-day sample:",
+      JSON.stringify(
+        multiDayAllDay.slice(0, 2).map((e) => ({
+          title: e.title,
+          start: e.start,
+          end: e.end,
+        })),
+        null,
+        2,
+      ),
+    );
+  }
 }
 
 export async function GET(request: NextRequest) {

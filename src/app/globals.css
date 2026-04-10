@@ -255,27 +255,27 @@ a:hover {
   color: var(--muted);
 }
 
-/* BER-42 Teil 2: Monatsansicht mobil – kompakte Zellen, Dots, „mehr“-Link; Woche – kleinere Typo */
+/* BER-42 Teil 2 + 3: Monatsansicht mobil nur in dayGridMonth (nicht Wochen-Ganztags-Zeile); Woche – kleinere Typo */
 @media (max-width: 639px) {
-  .fc .fc-daygrid-body .fc-daygrid-day-frame {
+  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-day-frame {
     min-height: 2.5rem;
     max-height: 3.5rem;
     overflow: hidden;
   }
 
-  .fc .fc-daygrid-body .fc-daygrid-day-events {
+  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-day-events {
     max-height: 1.2rem;
     overflow: hidden;
   }
 
-  .fc .fc-daygrid-more-link {
+  .fc-dayGridMonth-view .fc-daygrid-more-link {
     font-family: var(--font-mono);
     font-size: 0.6rem;
     color: var(--copper);
   }
 
-  /* Event-Markierungen: kupferfarbene Kreise (Text ausgeblendet); Tap auf Tageszahl → navLinks */
-  .fc .fc-daygrid-body .fc-daygrid-event {
+  /* Event-Markierungen Monat: kupferfarbene Kreise (Wochenansicht-Ganztags unverändert durch FullCalendar) */
+  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-event {
     font-size: 0 !important;
     line-height: 0 !important;
     min-height: 6px;
@@ -291,13 +291,32 @@ a:hover {
     overflow: hidden;
   }
 
-  .fc .fc-daygrid-body .fc-daygrid-event .fc-event-main {
+  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-event .fc-event-main {
     min-height: 0;
   }
 
-  .fc .fc-daygrid-day-number {
+  /* Mo–So Kopfzeile sichtbar; Tageszahl als Touch-Target (navLinks) */
+  .fc-dayGridMonth-view .fc-col-header-cell {
+    vertical-align: middle;
+    padding: 0.25rem 0.125rem;
+  }
+
+  .fc-dayGridMonth-view .fc-col-header-cell-cushion {
+    display: block;
+    width: 100%;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .fc-dayGridMonth-view .fc-daygrid-day-number {
     font-size: 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
     padding: 2px 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
   }
 
   /* BER-42 §4: responsive Typografie (Listen + Zeitraster) */

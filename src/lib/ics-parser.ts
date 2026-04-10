@@ -35,6 +35,12 @@ function mapOccurrence(
   end: ICAL.Time,
   uidSuffix: string,
 ): CalendarEvent {
+  let endNorm = end;
+  if (start.isDate && endNorm.isDate && endNorm.compare(start) <= 0) {
+    endNorm = start.clone();
+    endNorm.day += 1;
+  }
+
   const allDay = start.isDate;
   const title = ev.summary ?? "(Ohne Titel)";
   const description =
@@ -45,7 +51,7 @@ function mapOccurrence(
     id: `${ev.uid}-${uidSuffix}`,
     title,
     start: timeToStartISO(start),
-    end: timeToEndISO(end),
+    end: timeToEndISO(endNorm),
     allDay,
     description,
     location,

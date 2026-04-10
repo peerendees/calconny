@@ -54,8 +54,8 @@ export function ViewSwitcher({
   return (
     <div className="flex w-full max-w-full flex-col gap-2">
       {/* Zeile 1: Links-Navigation | L / W / M (zentriert) | Rechts-Navigation + Aktualisieren */}
-      <div className="grid min-w-0 min-h-[2.75rem] w-full grid-cols-[1fr_auto_1fr] items-center gap-x-1 gap-y-1">
-        <div className="flex min-w-0 flex-wrap items-center justify-start gap-1">
+      <div className="grid min-w-0 min-h-[2.75rem] w-full grid-cols-[1fr_auto_1fr] items-center gap-x-1 gap-y-0">
+        <div className="flex min-w-0 flex-nowrap items-center justify-start gap-0.5 sm:gap-1">
           {showWeekStepNav ? (
             <>
               <button
@@ -89,7 +89,7 @@ export function ViewSwitcher({
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-center gap-1">
+        <div className="flex shrink-0 flex-nowrap items-center justify-center gap-0.5 sm:gap-1">
           {views.map((v) => {
             const isOn = active === v.id;
             return (
@@ -111,7 +111,7 @@ export function ViewSwitcher({
           })}
         </div>
 
-        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+        <div className="flex min-w-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
           {showWeekStepNav ? (
             <>
               <button
@@ -147,7 +147,7 @@ export function ViewSwitcher({
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
-            className={refreshBtnClass}
+            className={`${refreshBtnClass} hidden sm:flex`}
             aria-label="Kalenderdaten neu laden"
             title="Kalenderdaten neu laden"
           >
