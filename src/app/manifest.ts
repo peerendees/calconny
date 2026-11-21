@@ -1,14 +1,18 @@
 import type { MetadataRoute } from "next";
+import { THEME_COLORS } from "@/lib/theme";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "CalConny",
     short_name: "CalConny",
     description: "Kalender BERENT.AI",
+    lang: "de",
     start_url: "/",
+    scope: "/",
     display: "standalone",
-    background_color: "#090806",
-    theme_color: "#090806",
+    background_color: THEME_COLORS.dark,
+    theme_color: THEME_COLORS.dark,
     icons: [
       {
         src: "/icons/icon-192.png",

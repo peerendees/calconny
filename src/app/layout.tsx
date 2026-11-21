@@ -3,6 +3,7 @@ import Script from "next/script";
 import { PwaUpdateNotifier } from "@/components/pwa/PwaUpdateNotifier";
 import { Footer } from "@/components/ui/Footer";
 import { Header } from "@/components/ui/Header";
+import { THEME_COLORS } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,10 +14,18 @@ export const metadata: Metadata = {
     title: "CalConny",
     statusBarStyle: "black-translucent",
   },
+  // iOS nimmt für den Home-Bildschirm kein Manifest-Icon, sondern apple-touch-icon.
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#090806",
+  // Ohne gespeicherte Wahl folgt die App dem System; ThemeToggle gleicht die Tags beim Umschalten an.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -52,9 +61,7 @@ export default function RootLayout({
         </Script>
         <PwaUpdateNotifier />
         <Header />
-        <main className="flex flex-1 flex-col px-[max(1rem,env(safe-area-inset-left))] py-6 pr-[max(1rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6">
-          {children}
-        </main>
+        <main className="calconny-safe-x flex flex-1 flex-col py-6">{children}</main>
         <Footer />
       </body>
     </html>

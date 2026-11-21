@@ -18,4 +18,6 @@ export type CalendarView = "dayGridMonth" | "slidingWeek" | "listWeek";
 export interface CalendarApiResponse {
   events: CalendarEvent[];
   warnings?: string[];
+  /** Zeitpunkt, zu dem der Server die Antwort erzeugt hat (ISO 8601). */
+  generatedAt?: string;
 }

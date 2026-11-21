@@ -78,6 +78,8 @@
 
 html {
   color-scheme: dark;
+  /* Horizontales Wischen blättert im Kalender, nicht im Browser-Verlauf */
+  overscroll-behavior-x: none;
 }
 
 html[data-theme="light"] {
@@ -98,7 +100,9 @@ html[data-theme="light"] {
 
 body {
   margin: 0;
+  /* dvh: Adressleiste von Chrome Android / Safari iOS; vh nur als Rückfall für alte Browser */
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -118,6 +122,19 @@ a:hover {
 * {
   scrollbar-color: var(--border) var(--card);
   scrollbar-width: thin;
+}
+
+/* Seitenrand mit Rücksicht auf Notch/abgerundete Ecken (viewport-fit=cover), auch im Querformat */
+.calconny-safe-x {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .calconny-safe-x {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
 }
 
 .plus-mark {
@@ -229,7 +246,56 @@ a:hover {
 }
 
 .fc .calconny-week-day-head {
-  min-width: 0;
+  /* Tageskopf ist ein Link zur Tagesansicht: mindestens 44 px breit */
+  min-width: 2.75rem;
+}
+
+/* Wischbereich: auch in den inneren Scrollern nur vertikal scrollen (und zoomen) lassen */
+.calconny-calendar-swipe .fc-scroller,
+.calconny-calendar-swipe .fc-timegrid {
+  touch-action: pan-y pinch-zoom;
+}
+
+/* Lange Wörter/URLs in Terminen dürfen die Seite bei 360 px nicht verbreitern */
+.fc .fc-list-event-title,
+.fc .fc-event-title {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Listenansicht: Datum und Uhrzeit stehen in der EventCard (BER-42 Teil 2) –
+ * die Zeit-Spalte von FullCalendar wäre doppelt und nimmt bei 360 px den Platz für den Titel.
+ */
+.fc .fc-list-table td.fc-list-event-time {
+  display: none;
+}
+
+.fc .fc-list-table td.fc-list-event-title {
+  width: 100%;
+  /* max-width: 0 – lange Titel/URLs dürfen die Tabelle nicht über den Viewport dehnen */
+  max-width: 0;
+}
+
+/* Tageskopf der Liste: Links (navLinks → Tagesliste) als 44-px-Ziel */
+.fc .fc-list-day-cushion {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.fc .fc-list-day-cushion a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 639px) {
+  .fc .fc-list-table td.fc-list-event-graphic {
+    display: none;
+  }
+
+  .fc .fc-list-table td.fc-list-event-title {
+    padding: 6px 8px;
+  }
 }
 
 /* Priorität 0 (BER-42): Termintext in der Wochenansicht auf schmalen Viewports lesbar */
@@ -258,41 +324,30 @@ a:hover {
 /* BER-42 Teil 2 + 3: Monatsansicht mobil nur in dayGridMonth (nicht Wochen-Ganztags-Zeile); Woche – kleinere Typo */
 @media (max-width: 639px) {
   .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-day-frame {
-    min-height: 2.5rem;
-    max-height: 3.5rem;
-    overflow: hidden;
+    min-height: 3.5rem;
   }
 
+  /*
+   * Monat mobil: ein kupferfarbener Punkt je Tag mit Terminen (Klasse aus dayCellClassNames).
+   * Die Event-Elemente selbst werden ausgeblendet – als 6-px-Punkte wurden mehrtägige Termine
+   * an der Zellgrenze abgeschnitten und weitere Punkte lagen unterhalb der Zelle.
+   * Tap auf die Tageszahl (navLinks) zeigt die Termine des Tages.
+   */
   .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-day-events {
-    max-height: 1.2rem;
-    overflow: hidden;
+    display: none;
   }
 
-  .fc-dayGridMonth-view .fc-daygrid-more-link {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--copper);
-  }
-
-  /* Event-Markierungen Monat: kupferfarbene Kreise (Wochenansicht-Ganztags unverändert durch FullCalendar) */
-  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-event {
-    font-size: 0 !important;
-    line-height: 0 !important;
-    min-height: 6px;
-    max-height: 6px;
+  .fc-dayGridMonth-view .calconny-day-has-events .fc-daygrid-day-frame::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 5px;
     width: 6px;
-    max-width: 6px;
+    height: 6px;
+    margin-left: -3px;
     border-radius: 50%;
-    padding: 0 !important;
-    margin: 1px auto !important;
-    display: block;
-    background: var(--copper) !important;
-    border: none !important;
-    overflow: hidden;
-  }
-
-  .fc-dayGridMonth-view .fc-daygrid-body .fc-daygrid-event .fc-event-main {
-    min-height: 0;
+    background: var(--copper);
+    pointer-events: none;
   }
 
   /* Mo–So Kopfzeile sichtbar; Tageszahl als Touch-Target (navLinks) */

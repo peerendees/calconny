@@ -1,6 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import { THEME_COLORS } from "@/lib/theme";
 
 const STORAGE_KEY = "calconny-theme";
 
@@ -23,6 +24,14 @@ function getServerSnapshot() {
 export function ThemeToggle() {
   const light = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
+  /** Browser-/Statusleiste (theme-color) folgt dem gewählten Schema, nicht nur dem System. */
+  useEffect(() => {
+    const color = light ? THEME_COLORS.light : THEME_COLORS.dark;
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((meta) => meta.setAttribute("content", color));
+  }, [light]);
+
   function toggle() {
     const next = !light;
     const root = document.documentElement;
@@ -42,7 +51,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="theme-toggle flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--muted)] transition-[color,border-color] duration-300 ease-out hover:border-[var(--copper)] hover:text-[var(--copper)]"
+      className="theme-toggle touch-manipulation flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--muted)] transition-[color,border-color] duration-300 ease-out hover:border-[var(--copper)] hover:text-[var(--copper)]"
       aria-label="Farbschema wechseln"
     >
       <span className="sr-only">Hell- und Dunkelmodus wechseln</span>
