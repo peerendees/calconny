@@ -38,6 +38,8 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  // Für Docker/Coolify: .next/standalone mit minimalem server.js. Vercel ignoriert die Option.
+  output: "standalone",
   turbopack: {},
 };
 
