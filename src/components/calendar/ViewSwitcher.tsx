@@ -28,7 +28,7 @@ const views: { id: CalendarView; label: string; short: string }[] = [
 ];
 
 const viewBtnClass = [
-  "touch-manipulation min-h-11 min-w-[2.75rem] rounded border px-2 py-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wide transition-colors sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs",
+  "touch-manipulation min-h-11 min-w-[2.75rem] rounded border px-2 py-2 font-[family-name:var(--font-mono)] text-sm uppercase tracking-wide transition-colors sm:px-3 sm:text-xs",
 ].join(" ");
 
 const navBtnClass =
@@ -97,6 +97,8 @@ export function ViewSwitcher({
                 key={v.id}
                 type="button"
                 onClick={() => onViewChange(v.id)}
+                aria-label={`Ansicht ${v.label}`}
+                aria-pressed={isOn}
                 className={[
                   viewBtnClass,
                   isOn
@@ -157,9 +159,22 @@ export function ViewSwitcher({
         </div>
       </div>
 
-      <p className="w-full text-center font-[family-name:var(--font-body)] text-sm text-[var(--text)] sm:text-left sm:text-base">
-        {rangeTitle}
-      </p>
+      {/* Zeile 2: Zeitraum; mobil daneben Neu-laden (installierte PWA hat kein Pull-to-Refresh auf iOS) */}
+      <div className="flex w-full min-w-0 items-center gap-2">
+        <span className="w-11 shrink-0 sm:hidden" aria-hidden />
+        <p className="min-w-0 flex-1 text-center font-[family-name:var(--font-body)] text-sm text-[var(--text)] sm:text-left sm:text-base">
+          {rangeTitle}
+        </p>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing}
+          className={`${navBtnClass} disabled:opacity-50 sm:hidden`}
+          aria-label="Kalenderdaten neu laden"
+        >
+          {refreshing ? "…" : "↻"}
+        </button>
+      </div>
     </div>
   );
 }

@@ -27,7 +27,7 @@ export function EventCard({ title, dateLabel, timeLabel, location, description }
           setExpanded((x) => !x);
         }}
         className={[
-          "min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--copper)]",
+          "min-h-11 min-w-0 flex-1 touch-manipulation text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--copper)]",
           hasDetails ? "cursor-pointer" : "cursor-default",
         ].join(" ")}
       >
@@ -37,7 +37,7 @@ export function EventCard({ title, dateLabel, timeLabel, location, description }
         </div>
         <p
           className={[
-            "mt-1.5 font-[family-name:var(--font-body)] font-normal text-[var(--text)] transition-colors duration-200 ease-out",
+            "mt-1.5 break-words font-[family-name:var(--font-body)] font-normal text-[var(--text)] transition-colors duration-200 ease-out",
             expanded ? "" : "line-clamp-1",
           ].join(" ")}
         >
@@ -51,7 +51,7 @@ export function EventCard({ title, dateLabel, timeLabel, location, description }
         >
           <div className="min-h-0 overflow-hidden">
             {description?.trim() ? (
-              <p className="mt-1 line-clamp-2 font-[family-name:var(--font-body)] font-light text-sm text-[var(--muted2)]">
+              <p className="mt-1 line-clamp-2 break-words font-[family-name:var(--font-body)] font-light text-sm text-[var(--muted2)]">
                 {description.trim()}
               </p>
             ) : null}

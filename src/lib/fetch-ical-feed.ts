@@ -18,13 +18,17 @@ const ICS_HEADERS = {
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
 } as const;
 
-export function getFetchErrorDetail(e: unknown): string {
-  if (!(e instanceof Error)) return String(e);
-  let out = e.message;
-  if (e.cause instanceof Error) {
-    out += ` — ${e.cause.message}`;
+/**
+ * Kurzer Fehlercode fürs Server-Log (z. B. ENOTFOUND, AbortError) – bewusst ohne
+ * Meldungstext, weil der Host oder Teile der Abo-URL darin stehen können.
+ */
+export function getFetchErrorCode(e: unknown): string {
+  if (!(e instanceof Error)) return "unbekannt";
+  const cause = e.cause;
+  if (cause && typeof cause === "object" && "code" in cause && typeof cause.code === "string") {
+    return cause.code;
   }
-  return out;
+  return e.name;
 }
 
 /**

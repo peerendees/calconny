@@ -13,7 +13,12 @@ export function PwaUpdateNotifier() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
+    // Beim allerersten Besuch übernimmt der Service Worker die Seite (clientsClaim) –
+    // das ist kein Update und braucht kein Neuladen.
+    const hadController = Boolean(navigator.serviceWorker.controller);
+
     const onControllerChange = () => {
+      if (!hadController) return;
       if (refreshing.current) return;
       refreshing.current = true;
       window.location.reload();

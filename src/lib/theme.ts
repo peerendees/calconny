@@ -7,3 +7,9 @@ export const BERENT_COLORS = {
   text: "#C4BCB1",
   muted: "#7A6A58",
 } as const;
+
+/** Seitenhintergrund je Farbschema – muss zu --bg in globals.css passen (Browser-/Statusleiste). */
+export const THEME_COLORS = {
+  dark: "#090806",
+  light: "#f5efe4",
+} as const;

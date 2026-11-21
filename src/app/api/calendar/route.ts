@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getCalendarFeedUrlsFromEnv } from "@/lib/calendar-feed-env";
-import { fetchIcsFeed, getFetchErrorDetail } from "@/lib/fetch-ical-feed";
+import { fetchIcsFeed, getFetchErrorCode } from "@/lib/fetch-ical-feed";
 import { parseIcsToCalendarEvents } from "@/lib/ics-parser";
 import { mergeCalendarEvents } from "@/lib/merge-calendar-events";
 import type { CalendarEvent } from "@/lib/types";
@@ -8,11 +8,15 @@ import type { CalendarEvent } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/** Erste Events als JSON in Logs (lokal, oder Vercel mit CALCONNY_DEBUG_ICS=1). */
+/** Fehlerantworten dürfen weder CDN noch Browser noch Service Worker zwischenspeichern. */
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
+
+/**
+ * Erste Events als JSON in Logs – nur mit ausdrücklichem CALCONNY_DEBUG_ICS=1,
+ * damit Kalenderinhalte nie versehentlich in Server-Logs landen.
+ */
 function logParsedEventsDebug(events: CalendarEvent[]): void {
-  const enabled =
-    process.env.CALCONNY_DEBUG_ICS === "1" || process.env.NODE_ENV === "development";
-  if (!enabled) return;
+  if (process.env.CALCONNY_DEBUG_ICS !== "1") return;
 
   const sample = events.slice(0, 3).map((e) => ({
     title: e.title,
@@ -69,28 +73,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Kein Kalender-Abo konfiguriert. In Vercel: ICAL_FEED_URL und/oder ICAL_FEED_URLS (kommagetrennt) bzw. ICAL_FEED_URL_2 … setzen und neu deployen.",
+          "Kein Kalender-Abo konfiguriert. Auf dem Server fehlt ICAL_FEED_URL bzw. ICAL_FEED_URLS (Umgebungsvariable setzen und neu starten bzw. deployen).",
       },
-      { status: 500 },
+      { status: 500, headers: NO_STORE_HEADERS },
     );
   }
 
   const chunks: CalendarEvent[][] = [];
   const warnings: string[] = [];
 
-  for (const fetchUrl of urls) {
+  for (const [index, fetchUrl] of urls.entries()) {
+    // Abo-URLs enthalten Zugriffstoken: nie an den Client oder in Logs geben, nur die Position.
+    const label = `Kalender ${index + 1}`;
+
     let res: Response;
     try {
       res = await fetchIcsFeed(fetchUrl);
     } catch (e) {
-      const detail = getFetchErrorDetail(e);
-      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
-      warnings.push(`${label}: ${detail}`);
+      console.warn(`[calconny/api/calendar] ${label}: Abruf fehlgeschlagen (${getFetchErrorCode(e)})`);
+      warnings.push(`${label}: nicht erreichbar`);
       continue;
     }
 
     if (!res.ok) {
-      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
       warnings.push(`${label}: HTTP ${res.status}`);
       continue;
     }
@@ -98,10 +103,9 @@ export async function GET(request: NextRequest) {
     const text = await res.text();
     try {
       chunks.push(parseIcsToCalendarEvents(text));
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Parserfehler";
-      const label = fetchUrl.length > 64 ? `${fetchUrl.slice(0, 64)}…` : fetchUrl;
-      warnings.push(`${label}: ${message}`);
+    } catch {
+      // Parser-Meldungen können Zeilen aus dem Feed enthalten – nicht weiterreichen.
+      warnings.push(`${label}: Antwort ist kein gültiger iCal-Feed`);
     }
   }
 
@@ -111,7 +115,7 @@ export async function GET(request: NextRequest) {
         error: "Kein Kalender konnte geladen werden.",
         warnings,
       },
-      { status: 502 },
+      { status: 502, headers: NO_STORE_HEADERS },
     );
   }
 
@@ -123,7 +127,11 @@ export async function GET(request: NextRequest) {
     : "s-maxage=300, stale-while-revalidate=60";
 
   return NextResponse.json(
-    { events, warnings: warnings.length ? warnings : undefined },
+    {
+      events,
+      warnings: warnings.length ? warnings : undefined,
+      generatedAt: new Date().toISOString(),
+    },
     {
       headers: {
         "Cache-Control": cacheControl,

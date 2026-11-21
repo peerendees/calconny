@@ -1,0 +1,29 @@
+# Abhängigkeiten und Build-Ausgaben werden im Image neu erzeugt
+node_modules
+.next
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# Generierter Service Worker (entsteht beim Build)
+public/sw.js
+public/workbox-*.js
+
+# Secrets und lokale Konfiguration nie in den Build-Kontext
+.env*
+!.env.example
+*.pem
+.vercel
+
+# Versionsverwaltung, Werkzeuge, Doku
+.git
+.gitignore
+.claude
+.cursor
+docs
+*.md
+Dockerfile
+.dockerignore
+.DS_Store
+npm-debug.log*
