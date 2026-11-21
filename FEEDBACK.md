@@ -28,6 +28,16 @@ Was genau passiert / was erwartet wird / wo genau (Ansicht, Gerät)
 
 <!-- Abgearbeitete Punkte hierher verschieben -->
 
+### [2026-11-21] BER-42 – Mobile-Härtung, Next-Update, Coolify-Vorbereitung
+
+- **Kopfzeilen:** Wochentage in der Monatsansicht (Mo–So) und Tagesköpfe in der Liste waren leer – `dayHeaderContent` gab `undefined` zurück, FullCalendar erwartet für den Standard `true`.
+- **Monat mobil:** ein Punkt je Tag mit Terminen (auch für jeden Tag mehrtägiger Termine); vorher wurden mehrtägige Termine an der Zellgrenze abgeschnitten. Tap auf einen Tag öffnet die **Tagesliste** mit allen Terminen (statt Tagesraster mit „+ weitere“).
+- **Liste:** Uhrzeit steht jetzt rechts in der Karte (wie in Teil 2 vorgesehen), die doppelte Zeit-Spalte entfällt – mehr Platz für den Titel bei 360 px.
+- **Laden/Fehler:** verständlicher Fehlerzustand mit „Neu laden“; schlägt nur die Aktualisierung fehl, bleiben die Termine stehen und ein Hinweis nennt den Stand. Neu-laden-Knopf auch mobil (neben dem Zeitraum), stilles Neuladen beim Zurückkehren in die App.
+- **Wischen:** nur ein Finger, klar horizontal, zügig, nicht vom Bildschirmrand (System-Zurück-Geste).
+- **Safe-Area / dvh / Touch-Ziele:** Header, Footer, Modal und Seitenränder berücksichtigen Notch und Home-Indikator; Bedienelemente mindestens 44 px.
+- **Auf dem Gerät noch zu prüfen:** siehe Checkliste im Pull Request.
+
 ### [2026-04-10] BER-42 Teil 3 – Bugfixes und UX-Feinschliff (Briefing `.cursor/briefings/BER-42-mobile-teil3.md`)
 
 - **Listenansicht / EventCard:** Standard zugeklappt (Datum + Uhrzeit eine Zeile, Titel `line-clamp-1`); Tap auf den Eintrag klappt Beschreibung (max. 2 Zeilen) und Ort auf (`useState`, sanfte `grid-template-rows`-Transition). Listenansicht öffnet kein Modal mehr – Details nur per Aufklappen; andere Ansichten: Modal bei Event-Tap unverändert.
